@@ -58,7 +58,7 @@ const app = express();
 // ===============================
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend URL
+    origin: "https://rameswaram-seafoods.vercel.app/", // frontend URL
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })
