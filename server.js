@@ -60,7 +60,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",                    // local development
-      "https://rameswaram-seafoods.vercel.app"    // live frontend (NO slash)
+      "https://rameswaram-seafoods-kijicj5ia-chandrus-projects-9edfaf7f.vercel.app"    // live frontend (NO slash)
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
