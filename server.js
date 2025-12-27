@@ -54,11 +54,14 @@ connectDB().then(() => createDefaultAdmin());
 const app = express();
 
 // ===============================
-// Middlewares
+// CORS MIDDLEWARE (FIXED)
 // ===============================
 app.use(
   cors({
-    origin: "https://rameswaram-seafoods.vercel.app/", // frontend URL
+    origin: [
+      "http://localhost:5173",                    // local development
+      "https://rameswaram-seafoods.vercel.app"    // live frontend (NO slash)
+    ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })
@@ -76,7 +79,7 @@ app.use("/invoices", express.static("invoices"));
 app.use("/api/admin", adminRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/orders", orderRoutes);  // 🔥 Important for checkout working
+app.use("/api/orders", orderRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
@@ -87,6 +90,4 @@ app.get("/", (req, res) => {
 // Start Server
 // ===============================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`🔥 Server Running at http://localhost:${PORT}`)
-);
+app.listen(PORT, () => console.log(`🔥 Server Running at ${PORT}`));
