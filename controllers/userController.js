@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Admin from "../models/Admin.js";
 
 const signUserToken = (userId) =>
   jwt.sign({ id: userId, role: "user", type: "user" }, process.env.JWT_SECRET, {
@@ -20,6 +21,8 @@ const toPublicUser = (user) => ({
 export const signupUser = async (req, res) => {
   try {
     const { name, email, mobile, password } = req.body;
+    const normalizedEmail = (email || "").toLowerCase().trim();
+    const adminLoginEmail = (process.env.ADMIN_LOGIN_EMAIL || "admin@rms.com").toLowerCase();
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Name, email and password are required" });
@@ -29,13 +32,22 @@ export const signupUser = async (req, res) => {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    const exists = await User.findOne({ email: email.toLowerCase().trim() });
+    if (normalizedEmail === adminLoginEmail) {
+      return res.status(400).json({ message: "This email is reserved for admin login" });
+    }
+
+    const adminExists = await Admin.findOne({ email: normalizedEmail });
+    if (adminExists) {
+      return res.status(400).json({ message: "This email is reserved for admin login" });
+    }
+
+    const exists = await User.findOne({ email: normalizedEmail });
     if (exists) return res.status(400).json({ message: "User already exists" });
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({
       name: name.trim(),
-      email: email.toLowerCase().trim(),
+      email: normalizedEmail,
       mobile: mobile?.trim() || "",
       passwordHash,
     });
@@ -124,4 +136,3 @@ export const getUsersForAdmin = async (req, res) => {
     return res.status(500).json({ message: "Failed to fetch users", error });
   }
 };
-

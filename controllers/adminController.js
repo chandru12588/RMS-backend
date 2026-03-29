@@ -2,6 +2,8 @@ import Admin from "../models/Admin.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+const ADMIN_LOGIN_EMAIL = (process.env.ADMIN_LOGIN_EMAIL || "admin@rms.com").toLowerCase();
+
 export const registerAdmin = async (req, res) => {
   try {
     const { name, email, mobile, password } = req.body;
@@ -31,8 +33,13 @@ export const registerAdmin = async (req, res) => {
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = (email || "").toLowerCase().trim();
 
-    const admin = await Admin.findOne({ email });
+    if (normalizedEmail !== ADMIN_LOGIN_EMAIL) {
+      return res.status(403).json({ message: "Only admin@rms.com can access admin login" });
+    }
+
+    const admin = await Admin.findOne({ email: normalizedEmail });
     if (!admin) return res.status(404).json({ message: "Admin not found" });
 
     const valid = await bcrypt.compare(password, admin.passwordHash);
@@ -88,6 +95,7 @@ export const changeAdminPassword = async (req, res) => {
 export const resetAdminPassword = async (req, res) => {
   try {
     const { email, mobile, newPassword } = req.body;
+    const normalizedEmail = (email || "").toLowerCase().trim();
     if (!email || !newPassword) {
       return res.status(400).json({ message: "Email and new password are required" });
     }
@@ -96,7 +104,11 @@ export const resetAdminPassword = async (req, res) => {
       return res.status(400).json({ message: "New password must be at least 6 characters" });
     }
 
-    const admin = await Admin.findOne({ email });
+    if (normalizedEmail !== ADMIN_LOGIN_EMAIL) {
+      return res.status(403).json({ message: "Only admin@rms.com can reset admin password" });
+    }
+
+    const admin = await Admin.findOne({ email: normalizedEmail });
     if (!admin) return res.status(404).json({ message: "Admin not found" });
 
     if (admin.mobile && mobile && admin.mobile !== mobile) {
@@ -127,12 +139,4 @@ export const getAdminMe = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch admin profile", error });
   }
-};
-
-export const getDefaultAdminCredentials = (req, res) => {
-  return res.json({
-    username: "owner@rms.com",
-    password: "rms@123",
-    note: "Change this default password immediately after first login.",
-  });
 };

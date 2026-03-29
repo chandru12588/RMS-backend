@@ -18,19 +18,35 @@ dotenv.config();
 //=============== DB + Default Admin =================
 async function createDefaultAdmin() {
   try {
-    const admin = await Admin.findOne({ email: "owner@rms.com" });
+    const targetEmail = (process.env.ADMIN_LOGIN_EMAIL || "admin@rms.com").toLowerCase();
+    const legacyEmail = "owner@rms.com";
+    const admin = await Admin.findOne({ email: targetEmail });
+
     if (!admin) {
+      const legacyAdmin = await Admin.findOne({ email: legacyEmail });
+
+      if (legacyAdmin) {
+        legacyAdmin.email = targetEmail;
+        await legacyAdmin.save();
+        console.log("Legacy admin migrated to admin@rms.com");
+        return;
+      }
+
       const passwordHash = await bcrypt.hash("rms@123", 10);
       await Admin.create({
         name: "RMS Owner",
-        email: "owner@rms.com",
+        email: targetEmail,
         mobile: "9655244550",
         passwordHash,
-        role: "owner"
+        role: "owner",
       });
-      console.log("🟢 Default admin created");
-    } else console.log("✔ Default admin exists");
-  } catch (err) { console.log(err) }
+      console.log("Default admin created");
+    } else {
+      console.log("Default admin exists");
+    }
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 connectDB().then(() => createDefaultAdmin());
@@ -38,16 +54,18 @@ connectDB().then(() => createDefaultAdmin());
 const app = express();
 
 //=============== FIXED CORS =================
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://rameswaram-seafoods.vercel.app",
-    "https://rameswaram-seafoods-kijicj5ia-chandrus-projects-9edfaf7f.vercel.app",
-    "https://rms-backend-44od.onrender.com"
-  ],
-  methods: ["GET","POST","PUT","PATCH","DELETE"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://rameswaram-seafoods.vercel.app",
+      "https://rameswaram-seafoods-kijicj5ia-chandrus-projects-9edfaf7f.vercel.app",
+      "https://rms-backend-44od.onrender.com",
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+  })
+);
 
 app.use(express.json({ limit: "20mb" }));
 
@@ -61,8 +79,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 
-app.get("/", (req,res)=> res.send("🚀 RMS Backend Running Successfully"));
+app.get("/", (req, res) => res.send("RMS Backend Running Successfully"));
 
 //=============== Start Server =================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT,()=>console.log(`🔥 Server on http://localhost:${PORT}`))
+app.listen(PORT, () => console.log(`Server on http://localhost:${PORT}`));
