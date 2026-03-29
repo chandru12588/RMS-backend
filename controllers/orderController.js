@@ -7,7 +7,7 @@ export const createOrder = async (req, res) => {
   try {
     const { customerName, customerMobile, customerEmail, customerAddress, items, paymentMode } = req.body;
 
-    if (!customerName || !customerMobile || !customerEmail || !customerAddress || !items || items.length === 0) {
+    if (!customerName || !customerMobile || !customerAddress || !items || items.length === 0) {
       return res.status(400).json({ message: "Order details missing!" });
     }
 
@@ -27,7 +27,7 @@ export const createOrder = async (req, res) => {
     const order = await Order.create({
       customerName,
       customerMobile,
-      customerEmail: customerEmail.toLowerCase().trim(),
+      customerEmail: customerEmail ? customerEmail.toLowerCase().trim() : "",
       customerAddress,
       items: orderItems,
       subtotalAmount,
