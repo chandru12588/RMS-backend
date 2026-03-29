@@ -42,7 +42,8 @@ export const createOrder = async (req, res) => {
 
     const subtotalAmount = orderItems.reduce((sum, item) => sum + item.total, 0);
     const cleaningCharge = hasCleaningItem ? 20 : 0;
-    const totalAmount = subtotalAmount + cleaningCharge;
+    const deliveryCharge = 20;
+    const totalAmount = subtotalAmount + cleaningCharge + deliveryCharge;
 
     const order = await Order.create({
       customerName,
@@ -52,6 +53,7 @@ export const createOrder = async (req, res) => {
       items: orderItems,
       subtotalAmount,
       cleaningCharge,
+      deliveryCharge,
       totalAmount,
       paymentMode: paymentMode || "COD",
     });
