@@ -5,26 +5,33 @@ import Order from "../models/Order.js";
 ============================================================ */
 export const createOrder = async (req, res) => {
   try {
-    const { customerName, customerMobile, customerAddress, items, totalAmount, paymentMode } = req.body;
+    const { customerName, customerMobile, customerEmail, customerAddress, items, paymentMode } = req.body;
 
-    if (!customerName || !customerMobile || !customerAddress || !items || items.length === 0) {
+    if (!customerName || !customerMobile || !customerEmail || !customerAddress || !items || items.length === 0) {
       return res.status(400).json({ message: "Order details missing!" });
     }
 
     // Convert cart products -> order items format
     const orderItems = items.map((i) => ({
-      productId: i._id,
+      productId: i._id || i.productId,
       name: i.name,
       price: i.price,
-      quantity: i.quantity || 1,
-      total: (i.quantity || 1) * i.price,
+      quantity: i.quantity || i.qty || 1,
+      total: (i.quantity || i.qty || 1) * i.price,
     }));
+
+    const subtotalAmount = orderItems.reduce((sum, item) => sum + item.total, 0);
+    const cleaningCharge = 20;
+    const totalAmount = subtotalAmount + cleaningCharge;
 
     const order = await Order.create({
       customerName,
       customerMobile,
+      customerEmail: customerEmail.toLowerCase().trim(),
       customerAddress,
       items: orderItems,
+      subtotalAmount,
+      cleaningCharge,
       totalAmount,
       paymentMode: paymentMode || "COD",
     });

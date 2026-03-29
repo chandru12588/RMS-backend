@@ -13,6 +13,13 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
+    customerEmail: {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+    },
+
     customerAddress: {
       type: String,
       required: true,
@@ -32,6 +39,16 @@ const orderSchema = new mongoose.Schema(
         total: { type: Number, required: true }, // Optional but good for invoice
       },
     ],
+
+    subtotalAmount: {
+      type: Number,
+      required: true,
+    },
+
+    cleaningCharge: {
+      type: Number,
+      default: 20,
+    },
 
     totalAmount: {
       type: Number,

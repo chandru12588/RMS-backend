@@ -52,7 +52,12 @@ export const addProduct = async (req, res) => {
 // ================= GET ALL PRODUCTS =================
 export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("categoryId");
+    const filter = {};
+    if (req.query.available === "true") {
+      filter.available = true;
+    }
+
+    const products = await Product.find(filter).populate("categoryId");
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: "Cannot fetch products", error });
