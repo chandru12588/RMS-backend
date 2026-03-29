@@ -11,10 +11,12 @@ import { requireAuth, requireAdmin } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/signup", signupUser);
+router.post("/register", signupUser);
 router.post("/login", loginUser);
+router.post("/signin", loginUser);
 router.post("/reset-password", resetUserPassword);
+router.post("/forgot-password", resetUserPassword);
 router.get("/me", requireAuth, getUserMe);
 router.get("/", requireAuth, requireAdmin, getUsersForAdmin);
 
 export default router;
-
