@@ -1,5 +1,20 @@
 import Order from "../models/Order.js";
 
+const CLEANING_CATEGORY_KEYWORDS = [
+  "fish",
+  "seafood",
+  "meat",
+  "chicken",
+  "mutton",
+  "prawn",
+  "crab",
+];
+
+const isCleaningCategory = (rawCategory = "") => {
+  const category = rawCategory.toLowerCase().trim();
+  return CLEANING_CATEGORY_KEYWORDS.some((keyword) => category.includes(keyword));
+};
+
 /* ============================================================
    📌 CREATE ORDER (Customer Checkout)
 ============================================================ */
@@ -20,8 +35,13 @@ export const createOrder = async (req, res) => {
       total: (i.quantity || i.qty || 1) * i.price,
     }));
 
+    const hasCleaningItem = items.some((i) => {
+      const categoryName = i.categoryName || i.category || i.categoryId?.name || "";
+      return isCleaningCategory(categoryName);
+    });
+
     const subtotalAmount = orderItems.reduce((sum, item) => sum + item.total, 0);
-    const cleaningCharge = 20;
+    const cleaningCharge = hasCleaningItem ? 20 : 0;
     const totalAmount = subtotalAmount + cleaningCharge;
 
     const order = await Order.create({
