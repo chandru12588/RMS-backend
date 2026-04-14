@@ -24,6 +24,8 @@ const productSchema = new mongoose.Schema({
 
   description: { type: String, default: "" },
 
+  whatsappNumber: { type: String, default: "919655244550" },  // WhatsApp number for orders containing this product
+
 }, { timestamps: true });
 
 // 🔍 Enable fast searching

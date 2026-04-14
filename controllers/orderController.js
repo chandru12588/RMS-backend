@@ -74,7 +74,13 @@ export const createOrder = async (req, res) => {
 ============================================================ */
 export const getOrders = async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
+    const orders = await Order.find().sort({ createdAt: -1 }).populate({
+      path: 'items.productId',
+      populate: {
+        path: 'categoryId',
+        model: 'Category'
+      }
+    });
     return res.json(orders);
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch orders", error });
@@ -87,7 +93,13 @@ export const getOrders = async (req, res) => {
 ============================================================ */
 export const getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).populate({
+      path: 'items.productId',
+      populate: {
+        path: 'categoryId',
+        model: 'Category'
+      }
+    });
 
     if (!order)
       return res.status(404).json({ message: "Order not found" });
