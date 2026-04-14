@@ -28,20 +28,26 @@ export const createOrder = async (req, res) => {
     }
 
     const productIds = items.map((i) => i._id || i.productId).filter(Boolean);
-    const products = await Product.find({ _id: { $in: productIds } }).select("whatsappNumber");
-    const productMap = new Map(products.map((p) => [String(p._id), p.whatsappNumber]));
+    const products = await Product.find({ _id: { $in: productIds } }).select("whatsappNumber minOrderQty");
+    const productMap = new Map(products.map((p) => [String(p._id), { whatsappNumber: p.whatsappNumber, minOrderQty: p.minOrderQty || 0 }]));
 
     // Convert cart products -> order items format
     const orderItems = items.map((i) => {
       const itemId = String(i._id || i.productId);
-      const productWhatsapp = productMap.get(itemId) || "919655244550";
+      const productData = productMap.get(itemId) || { whatsappNumber: "919655244550", minOrderQty: 0 };
+      const quantity = i.quantity || i.qty || 1;
+
+      if (productData.minOrderQty > 0 && quantity < productData.minOrderQty) {
+        throw new Error(`Minimum order quantity for ${i.name} is ${productData.minOrderQty}`);
+      }
+
       return {
         productId: i._id || i.productId,
         name: i.name,
         price: i.price,
-        quantity: i.quantity || i.qty || 1,
-        whatsappNumber: i.whatsappNumber || productWhatsapp,
-        total: (i.quantity || i.qty || 1) * i.price,
+        quantity,
+        whatsappNumber: i.whatsappNumber || productData.whatsappNumber || "919655244550",
+        total: quantity * i.price,
       };
     });
 
@@ -74,6 +80,9 @@ export const createOrder = async (req, res) => {
     });
 
   } catch (error) {
+    if (error.message?.startsWith("Minimum order quantity")) {
+      return res.status(400).json({ message: error.message });
+    }
     return res.status(500).json({ message: "Order creation failed", error });
   }
 };

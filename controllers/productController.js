@@ -6,7 +6,7 @@ import fs from "fs";
 // ================= ADD PRODUCT (MULTIPLE IMAGES CLOUDINARY) =================
 export const addProduct = async (req, res) => {
   try {
-    const { name, price, unit, categoryId, description, whatsappNumber } = req.body;
+    const { name, price, unit, categoryId, description, whatsappNumber, minOrderQty } = req.body;
 
     if (!name || !price || !categoryId) {
       return res.status(400).json({ message: "Name, price & category required" });
@@ -39,6 +39,7 @@ export const addProduct = async (req, res) => {
       description,
       images: uploadedImages,
       whatsappNumber: whatsappNumber || "919655244550",
+      minOrderQty: minOrderQty ? Number(minOrderQty) : 0,
     });
 
     res.status(201).json({ message: "Product Added Successfully 🎉", product });
@@ -83,7 +84,7 @@ export const getProductById = async (req, res) => {
 // ================= UPDATE PRODUCT =================
 export const updateProduct = async (req, res) => {
   try {
-    const { name, price, unit, categoryId, description, whatsappNumber } = req.body;
+    const { name, price, unit, categoryId, description, whatsappNumber, minOrderQty } = req.body;
 
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
@@ -113,6 +114,7 @@ export const updateProduct = async (req, res) => {
     product.categoryId = categoryId ?? product.categoryId;
     product.description = description ?? product.description;
     product.whatsappNumber = whatsappNumber ?? product.whatsappNumber;
+    product.minOrderQty = minOrderQty !== undefined ? Number(minOrderQty) : product.minOrderQty;
     product.images = [...product.images, ...newImages]; // keep old + new
 
     await product.save();

@@ -99,7 +99,7 @@ export const generateInvoice = async (req, res) => {
 
     const summaryRows = [
       ["Subtotal", money(subtotal)],
-      ["Cut & Cleaning Charge", money(cleaningCharge)],
+      ...(cleaningCharge > 0 ? [["Cut & Cleaning Charge", money(cleaningCharge)]] : []),
       ["Delivery Charge", money(deliveryCharge)],
       ["Grand Total", money(total)],
     ];
