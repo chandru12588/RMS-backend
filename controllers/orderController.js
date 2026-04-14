@@ -1,4 +1,5 @@
 import Order from "../models/Order.js";
+import Product from "../models/Product.js";
 
 const CLEANING_CATEGORY_KEYWORDS = [
   "fish",
@@ -26,15 +27,23 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ message: "Order details missing!" });
     }
 
+    const productIds = items.map((i) => i._id || i.productId).filter(Boolean);
+    const products = await Product.find({ _id: { $in: productIds } }).select("whatsappNumber");
+    const productMap = new Map(products.map((p) => [String(p._id), p.whatsappNumber]));
+
     // Convert cart products -> order items format
-    const orderItems = items.map((i) => ({
-      productId: i._id || i.productId,
-      name: i.name,
-      price: i.price,
-      quantity: i.quantity || i.qty || 1,
-      whatsappNumber: i.whatsappNumber || "919655244550",
-      total: (i.quantity || i.qty || 1) * i.price,
-    }));
+    const orderItems = items.map((i) => {
+      const itemId = String(i._id || i.productId);
+      const productWhatsapp = productMap.get(itemId) || "919655244550";
+      return {
+        productId: i._id || i.productId,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity || i.qty || 1,
+        whatsappNumber: i.whatsappNumber || productWhatsapp,
+        total: (i.quantity || i.qty || 1) * i.price,
+      };
+    });
 
     const hasCleaningItem = items.some((i) => {
       const categoryName = i.categoryName || i.category || i.categoryId?.name || "";
