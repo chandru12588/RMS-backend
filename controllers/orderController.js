@@ -145,6 +145,23 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
+/* ============================================================
+   📌 DELETE ORDER (Admin)
+============================================================ */
+export const deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.findByIdAndDelete(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    return res.json({ message: "Order deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete order", error });
+  }
+};
+
 
 /* ============================================================
    📌 STATS For Dashboard
