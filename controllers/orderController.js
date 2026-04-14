@@ -32,6 +32,7 @@ export const createOrder = async (req, res) => {
       name: i.name,
       price: i.price,
       quantity: i.quantity || i.qty || 1,
+      whatsappNumber: i.whatsappNumber || "919655244550",
       total: (i.quantity || i.qty || 1) * i.price,
     }));
 

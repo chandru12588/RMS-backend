@@ -36,6 +36,7 @@ const orderSchema = new mongoose.Schema(
         name: { type: String, required: true },
         price: { type: Number, required: true },
         quantity: { type: Number, default: 1 },
+        whatsappNumber: { type: String, default: "919655244550" },
         total: { type: Number, required: true }, // Optional but good for invoice
       },
     ],
